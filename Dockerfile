@@ -25,11 +25,16 @@ RUN dotnet publish \
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 
 # Create non-root user
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+RUN groupadd -r appgroup && \
+    useradd -r -g appgroup appuser
 
 WORKDIR /app
 
 COPY --from=build /app/publish .
+
+RUN chown -R appuser:appgroup /app
+
+USER appuser
 
 # ASP.NET Core Configuration
 ENV ASPNETCORE_URLS=http://+:8080
